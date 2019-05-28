@@ -72,8 +72,16 @@ namespace WindowsFormsApp1
                                         bool firstOff = true;
                                         foreach (XmlNode profile in profiles.ChildNodes)
                                         {
-                                            var charac = profile.ChildNodes[4];
-                                            if (profile.Attributes["profileTypeName"].Value.Contains("Global"))
+                                            XmlNode charac = null;
+                                            foreach (XmlNode characteristics in profile.ChildNodes)
+                                            {
+                                                if (characteristics.Name == "characteristics")
+                                                {
+                                                    charac = characteristics;
+                                                    break;
+                                                }
+                                            }
+                                            if (profile.Attributes["typeName"].Value.Contains("Global"))
                                             {
                                                 foreach (XmlNode characteristics in charac.ChildNodes)
                                                 {
@@ -81,17 +89,16 @@ namespace WindowsFormsApp1
                                                     {
                                                         switch (characteristics.Attributes["name"].Value)
                                                         {
-                                                            case "Adv": profilerule.ADV = characteristics.Attributes["value"].Value.Replace("\"", ""); break;
-                                                            case "Mar": profilerule.MAR = characteristics.Attributes["value"].Value.Replace("\"", ""); break;
-                                                            case "Dis": profilerule.Ld = characteristics.Attributes["value"].Value; break;
-                                                            case "Size": unit.size = characteristics.Attributes["value"].Value; break;
-                                                            case "Type": unit.type = characteristics.Attributes["value"].Value; break;
+                                                            case "Adv": profilerule.ADV = characteristics.InnerText.Replace("\"", ""); break;
+                                                            case "Mar": profilerule.MAR = characteristics.InnerText.Replace("\"", ""); break;
+                                                            case "Dis": profilerule.Ld = characteristics.InnerText; break;
+                                                            case "Size": unit.size = characteristics.InnerText; break;
+                                                            case "Type": unit.type = characteristics.InnerText; break;
                                                         }
                                                     }
                                                 }
                                             }
-                                            charac = profile.ChildNodes[4];
-                                            if (profile.Attributes["profileTypeName"].Value.Contains("Defensive"))
+                                            if (profile.Attributes["typeName"].Value.Contains("Defensive"))
                                             {
                                                 foreach (XmlNode characteristics in charac.ChildNodes)
                                                 {
@@ -99,16 +106,15 @@ namespace WindowsFormsApp1
                                                     {
                                                         switch (characteristics.Attributes["name"].Value)
                                                         {
-                                                            case "HP": profilerule.W = characteristics.Attributes["value"].Value; break;
-                                                            case "Def": profilerule.DEF = characteristics.Attributes["value"].Value; break;
-                                                            case "Res": profilerule.T = characteristics.Attributes["value"].Value; break;
-                                                            case "Arm": profilerule.ARM = characteristics.Attributes["value"].Value; break;
+                                                            case "HP": profilerule.W = characteristics.InnerText; break;
+                                                            case "Def": profilerule.DEF = characteristics.InnerText; break;
+                                                            case "Res": profilerule.T = characteristics.InnerText; break;
+                                                            case "Arm": profilerule.ARM = characteristics.InnerText; break;
                                                         }
                                                     }
                                                 }
                                             }
-                                            charac = profile.ChildNodes[4];
-                                            if (profile.Attributes["profileTypeName"].Value.Contains("Offensive"))
+                                            if (profile.Attributes["typeName"].Value.Contains("Offensive"))
                                             {
                                                 if (firstOff)
                                                 {
@@ -138,11 +144,11 @@ namespace WindowsFormsApp1
                                                     {
                                                         switch (characteristics.Attributes["name"].Value)
                                                         {
-                                                            case "Att": profilerule.A = characteristics.Attributes["value"].Value; break;
-                                                            case "Off": profilerule.OFF = characteristics.Attributes["value"].Value; break;
-                                                            case "Str": profilerule.S = characteristics.Attributes["value"].Value; break;
-                                                            case "AP": profilerule.AP = characteristics.Attributes["value"].Value; break;
-                                                            case "Agi": profilerule.I = characteristics.Attributes["value"].Value; break;
+                                                            case "Att": profilerule.A = characteristics.InnerText; break;
+                                                            case "Off": profilerule.OFF = characteristics.InnerText; break;
+                                                            case "Str": profilerule.S = characteristics.InnerText; break;
+                                                            case "AP": profilerule.AP = characteristics.InnerText; break;
+                                                            case "Agi": profilerule.I = characteristics.InnerText; break;
                                                         }
                                                     }
                                                 }
@@ -197,9 +203,18 @@ namespace WindowsFormsApp1
                                                     dynamic specialrule = new JObject();
                                                     var ruletext = info.Attributes["name"].Value;
                                                     specialrules.Add(specialrule);
-                                                    if (info.ChildNodes[3].ChildNodes.Count > 0)
+                                                    XmlNode infos = null;
+                                                    foreach (XmlNode inf in info.ChildNodes)
                                                     {
-                                                        foreach (XmlNode modifier in info.ChildNodes[3].ChildNodes)
+                                                        if (inf.Name == "modifiers")
+                                                        {
+                                                            infos = inf;
+                                                            break;
+                                                        }
+                                                    }
+                                                    if (infos != null && infos.ChildNodes.Count > 0)
+                                                    {
+                                                        foreach (XmlNode modifier in infos.ChildNodes)
                                                         {
                                                             if (modifier.Attributes["type"].Value == "append" && modifier.Attributes["field"].Value == "name")
                                                             ruletext += " " + modifier.Attributes["value"].Value;
@@ -340,78 +355,87 @@ namespace WindowsFormsApp1
                                                 {
                                                     foreach (XmlNode profile in info.ChildNodes[0].ChildNodes)
                                                     {
-                                                        var charac = profile.ChildNodes[4];
-                                                        if (profile.Attributes["profileTypeName"].Value.Contains("Global"))
+                                                        XmlNode charac = null;
+                                                        foreach (XmlNode characteristics in profile.ChildNodes)
                                                         {
-                                                            foreach (XmlNode characteristics in charac.ChildNodes)
+                                                            if (characteristics.Name == "characteristics")
                                                             {
-                                                                if (characteristics.Name == "characteristic")
+                                                                charac = characteristics;
+                                                                break;
+                                                            }
+                                                        }
+                                                        if (profile.Attributes["typeName"] != null)
+                                                        {
+                                                            if (profile.Attributes["typeName"].Value.Contains("Global"))
+                                                            {
+                                                                foreach (XmlNode characteristics in charac.ChildNodes)
                                                                 {
-                                                                    switch (characteristics.Attributes["name"].Value)
+                                                                    if (characteristics.Name == "characteristic")
                                                                     {
-                                                                        case "Adv": profilerule.ADV = characteristics.Attributes["value"].Value.Replace("\"", ""); break;
-                                                                        case "Mar": profilerule.MAR = characteristics.Attributes["value"].Value.Replace("\"", ""); break;
-                                                                        case "Dis": profilerule.Ld = characteristics.Attributes["value"].Value; break;
-                                                                        case "Size": unit.size = characteristics.Attributes["value"].Value; break;
-                                                                        case "Type": unit.type = characteristics.Attributes["value"].Value; break;
+                                                                        switch (characteristics.Attributes["name"].Value)
+                                                                        {
+                                                                            case "Adv": profilerule.ADV = characteristics.InnerText.Replace("\"", ""); break;
+                                                                            case "Mar": profilerule.MAR = characteristics.InnerText.Replace("\"", ""); break;
+                                                                            case "Dis": profilerule.Ld = characteristics.InnerText; break;
+                                                                            case "Size": unit.size = characteristics.InnerText; break;
+                                                                            case "Type": unit.type = characteristics.InnerText; break;
+                                                                        }
                                                                     }
                                                                 }
                                                             }
-                                                        }
-                                                        charac = profile.ChildNodes[4];
-                                                        if (profile.Attributes["profileTypeName"].Value.Contains("Defensive"))
-                                                        {
-                                                            foreach (XmlNode characteristics in charac.ChildNodes)
+                                                            if (profile.Attributes["typeName"].Value.Contains("Defensive"))
                                                             {
-                                                                if (characteristics.Name == "characteristic")
+                                                                foreach (XmlNode characteristics in charac.ChildNodes)
                                                                 {
-                                                                    switch (characteristics.Attributes["name"].Value)
+                                                                    if (characteristics.Name == "characteristic")
                                                                     {
-                                                                        case "HP": profilerule.W = characteristics.Attributes["value"].Value; break;
-                                                                        case "Def": profilerule.DEF = characteristics.Attributes["value"].Value; break;
-                                                                        case "Res": profilerule.T = characteristics.Attributes["value"].Value; break;
-                                                                        case "Arm": profilerule.ARM = characteristics.Attributes["value"].Value; break;
+                                                                        switch (characteristics.Attributes["name"].Value)
+                                                                        {
+                                                                            case "HP": profilerule.W = characteristics.InnerText; break;
+                                                                            case "Def": profilerule.DEF = characteristics.InnerText; break;
+                                                                            case "Res": profilerule.T = characteristics.InnerText; break;
+                                                                            case "Arm": profilerule.ARM = characteristics.InnerText; break;
+                                                                        }
                                                                     }
                                                                 }
                                                             }
-                                                        }
-                                                        charac = profile.ChildNodes[4];
-                                                        if (profile.Attributes["profileTypeName"].Value.Contains("Offensive"))
-                                                        {
-                                                            if (firstOff)
+                                                            if (profile.Attributes["typeName"].Value.Contains("Offensive"))
                                                             {
-                                                                profilerule.name = profile.Attributes["name"].Value.Replace("Offence", "");
-                                                                firstOff = false;
-                                                            }
-                                                            else
-                                                            {
+                                                                if (firstOff)
+                                                                {
+                                                                    profilerule.name = profile.Attributes["name"].Value.Replace("Offence", "");
+                                                                    firstOff = false;
+                                                                }
+                                                                else
+                                                                {
 
-                                                                profilerule = new JObject();
-                                                                profilerules.Add(profilerule);
-                                                                profilerule.name = profile.Attributes["name"].Value.Replace("Offence", "");
-                                                                profilerule.ADV = "-";
-                                                                profilerule.MAR = "-";
-                                                                profilerule.W = "-";
-                                                                profilerule.DEF = "-";
-                                                                profilerule.T = "-";
-                                                                profilerule.ARM = "-";
-                                                                profilerule.Dis = "-";
-                                                                dynamic specialrules2 = new JArray();
-                                                                profilerule.specialrules = specialrules2;
-                                                                dynamic equipments2 = new JArray();
-                                                                profilerule.equipments = specialrules2;
-                                                            }
-                                                            foreach (XmlNode characteristics in charac.ChildNodes)
-                                                            {
-                                                                if (characteristics.Name == "characteristic")
+                                                                    profilerule = new JObject();
+                                                                    profilerules.Add(profilerule);
+                                                                    profilerule.name = profile.Attributes["name"].Value.Replace("Offence", "");
+                                                                    profilerule.ADV = "-";
+                                                                    profilerule.MAR = "-";
+                                                                    profilerule.W = "-";
+                                                                    profilerule.DEF = "-";
+                                                                    profilerule.T = "-";
+                                                                    profilerule.ARM = "-";
+                                                                    profilerule.Dis = "-";
+                                                                    dynamic specialrules2 = new JArray();
+                                                                    profilerule.specialrules = specialrules2;
+                                                                    dynamic equipments2 = new JArray();
+                                                                    profilerule.equipments = specialrules2;
+                                                                }
+                                                                foreach (XmlNode characteristics in charac.ChildNodes)
                                                                 {
-                                                                    switch (characteristics.Attributes["name"].Value)
+                                                                    if (characteristics.Name == "characteristic")
                                                                     {
-                                                                        case "Att": profilerule.A = characteristics.Attributes["value"].Value; break;
-                                                                        case "Off": profilerule.OFF = characteristics.Attributes["value"].Value; break;
-                                                                        case "Str": profilerule.S = characteristics.Attributes["value"].Value; break;
-                                                                        case "AP": profilerule.AP = characteristics.Attributes["value"].Value; break;
-                                                                        case "Agi": profilerule.I = characteristics.Attributes["value"].Value; break;
+                                                                        switch (characteristics.Attributes["name"].Value)
+                                                                        {
+                                                                            case "Att": profilerule.A = characteristics.InnerText; break;
+                                                                            case "Off": profilerule.OFF = characteristics.InnerText; break;
+                                                                            case "Str": profilerule.S = characteristics.InnerText; break;
+                                                                            case "AP": profilerule.AP = characteristics.InnerText; break;
+                                                                            case "Agi": profilerule.I = characteristics.InnerText; break;
+                                                                        }
                                                                     }
                                                                 }
                                                             }
@@ -557,7 +581,7 @@ namespace WindowsFormsApp1
                                                                 {
                                                                     if (charac.Name == "characteristic")
                                                                     {
-                                                                        description += charac.Attributes["value"].Value;
+                                                                        description += charac.InnerText;
                                                                     }
                                                                 }
                                                             }
@@ -598,9 +622,18 @@ namespace WindowsFormsApp1
                                                     dynamic specialrule = new JObject();
                                                     var ruletext = info.Attributes["name"].Value;
                                                     specialrules.Add(specialrule);
-                                                    if (info.ChildNodes[3].ChildNodes.Count > 0)
+                                                    XmlNode infos = null;
+                                                    foreach (XmlNode inf in info.ChildNodes)
                                                     {
-                                                        foreach (XmlNode modifier in info.ChildNodes[3].ChildNodes)
+                                                        if (inf.Name == "modifiers")
+                                                        {
+                                                            infos = inf;
+                                                            break;
+                                                        }
+                                                    }
+                                                    if (infos != null && infos.ChildNodes.Count > 0)
+                                                    {
+                                                        foreach (XmlNode modifier in infos.ChildNodes)
                                                         {
                                                             if (modifier.Attributes["type"].Value == "append" && modifier.Attributes["field"].Value == "name")
                                                                 ruletext += " " + modifier.Attributes["value"].Value;
@@ -633,8 +666,16 @@ namespace WindowsFormsApp1
                                         bool firstOff = true;
                                         foreach (XmlNode profiler in profile.ChildNodes)
                                         {
-                                            var charac = profiler.ChildNodes[4];
-                                            if (profiler.Attributes["profileTypeName"].Value.Contains("Global"))
+                                            XmlNode charac = null;
+                                            foreach (XmlNode characteristics in profiler.ChildNodes)
+                                            {
+                                                if (characteristics.Name == "characteristics")
+                                                {
+                                                    charac = characteristics;
+                                                    break;
+                                                }
+                                            }
+                                            if (profiler.Attributes["typeName"].Value.Contains("Global"))
                                             {
                                                 foreach (XmlNode characteristics in charac.ChildNodes)
                                                 {
@@ -642,17 +683,16 @@ namespace WindowsFormsApp1
                                                     {
                                                         switch (characteristics.Attributes["name"].Value)
                                                         {
-                                                            case "Adv": mountrule.ADV = characteristics.Attributes["value"].Value.Replace("\"", ""); break;
-                                                            case "Mar": mountrule.MAR = characteristics.Attributes["value"].Value.Replace("\"", ""); break;
-                                                            case "Dis": mountrule.Ld = characteristics.Attributes["value"].Value; break;
-                                                            case "Size": mount.size = characteristics.Attributes["value"].Value; break;
-                                                            case "Type": mount.type = characteristics.Attributes["value"].Value; break;
+                                                            case "Adv": mountrule.ADV = characteristics.InnerText.Replace("\"", ""); break;
+                                                            case "Mar": mountrule.MAR = characteristics.InnerText.Replace("\"", ""); break;
+                                                            case "Dis": mountrule.Ld = characteristics.InnerText; break;
+                                                            case "Size": mount.size = characteristics.InnerText; break;
+                                                            case "Type": mount.type = characteristics.InnerText; break;
                                                         }
                                                     }
                                                 }
                                             }
-                                            charac = profiler.ChildNodes[4];
-                                            if (profiler.Attributes["profileTypeName"].Value.Contains("Defensive"))
+                                            if (profiler.Attributes["typeName"].Value.Contains("Defensive"))
                                             {
                                                 foreach (XmlNode characteristics in charac.ChildNodes)
                                                 {
@@ -660,16 +700,15 @@ namespace WindowsFormsApp1
                                                     {
                                                         switch (characteristics.Attributes["name"].Value)
                                                         {
-                                                            case "HP": mountrule.W = characteristics.Attributes["value"].Value; break;
-                                                            case "Def": mountrule.DEF = characteristics.Attributes["value"].Value; break;
-                                                            case "Res": mountrule.T = characteristics.Attributes["value"].Value; break;
-                                                            case "Arm": mountrule.ARM = characteristics.Attributes["value"].Value; break;
+                                                            case "HP": mountrule.W = characteristics.InnerText; break;
+                                                            case "Def": mountrule.DEF = characteristics.InnerText; break;
+                                                            case "Res": mountrule.T = characteristics.InnerText; break;
+                                                            case "Arm": mountrule.ARM = characteristics.InnerText; break;
                                                         }
                                                     }
                                                 }
                                             }
-                                            charac = profiler.ChildNodes[4];
-                                            if (profiler.Attributes["profileTypeName"].Value.Contains("Offensive"))
+                                            if (profiler.Attributes["typeName"].Value.Contains("Offensive"))
                                             {
                                                 if (firstOff)
                                                 {
@@ -700,11 +739,11 @@ namespace WindowsFormsApp1
                                                     {
                                                         switch (characteristics.Attributes["name"].Value)
                                                         {
-                                                            case "Att": mountrule.A = characteristics.Attributes["value"].Value; break;
-                                                            case "Off": mountrule.OFF = characteristics.Attributes["value"].Value; break;
-                                                            case "Str": mountrule.S = characteristics.Attributes["value"].Value; break;
-                                                            case "AP": mountrule.AP = characteristics.Attributes["value"].Value; break;
-                                                            case "Agi": mountrule.I = characteristics.Attributes["value"].Value; break;
+                                                            case "Att": mountrule.A = characteristics.InnerText; break;
+                                                            case "Off": mountrule.OFF = characteristics.InnerText; break;
+                                                            case "Str": mountrule.S = characteristics.InnerText; break;
+                                                            case "AP": mountrule.AP = characteristics.InnerText; break;
+                                                            case "Agi": mountrule.I = characteristics.InnerText; break;
                                                         }
                                                     }
                                                 }
